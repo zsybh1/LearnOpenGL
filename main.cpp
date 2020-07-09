@@ -7,6 +7,7 @@
 
 #include <shader.h>
 #include <camera.h>
+#include <object_manager.h>
 
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
@@ -19,7 +20,6 @@ void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 
-// settings
 int SCR_WIDTH = 1440;
 int SCR_HEIGHT = 810;
 int MAX_FRAME_PER_SECOND = 250;
@@ -31,42 +31,14 @@ float deltaTime = 0.0f;
 int main() {
 
     GLFWwindow *window = lib_init();
-    if (window == NULL) {
-        glfwTerminate();
-        return 0;
-    }
+    
+    Object_Manager objectManager;
+    objectManager.load(Object::rectangle);
 
     Shader squareShader("shaders/normal_square.vs", "shaders/normal_square.fs");
-    unsigned squareVAO, squareVBO, squareEBO;
-    {
-        float square[] = {
-            0.5f,  0.5f, 0.0f,  //右上
-           -0.5f,  0.5f, 0.0f,  //左上
-           -0.5f, -0.5f, 0.0f,  //左下
-            0.5f, -0.5f, 0.0f   //右下
-        };
-
-        unsigned squareIndex[] = {
-            0, 1, 2,
-            0, 2, 3
-        };
-
-        glGenVertexArrays(1, &squareVAO);
-        glGenBuffers(1, &squareVBO);
-        glGenBuffers(1, &squareEBO);
-
-        glBindVertexArray(squareVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, squareVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, squareEBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(squareIndex), squareIndex, GL_STATIC_DRAW);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    }
-    glBindVertexArray(0);
+    
+    
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));
-
 
     while (!glfwWindowShouldClose(window)) {
         Sleep(1000 / MAX_FRAME_PER_SECOND);
@@ -85,16 +57,12 @@ int main() {
         squareShader.setMat4("perspective", perspective);
         squareShader.setMat4("model", model);
         squareShader.setMat4("view", view);
-        glBindVertexArray(squareVAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        objectManager.draw(Object::rectangle);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-
     }
 
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }

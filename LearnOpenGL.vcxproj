@@ -20,11 +20,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\library\OpenGLlibrary\implement\glad.c" />
-    <ClCompile Include="implement\camera.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\object_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera.h" />
+    <ClInclude Include="include\object_manager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

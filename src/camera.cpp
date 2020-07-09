@@ -1,9 +1,6 @@
-#pragma once
 #include <camera.h>
 #include <cmath>
 #include <algorithm>
-
-#include <iostream>
 
 glm::mat4 Camera::view_matrix() {
 	/*自行构造的视图矩阵
