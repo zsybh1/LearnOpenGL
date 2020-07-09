@@ -19,8 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="implement\glad.c" />
+    <ClCompile Include="..\..\..\library\OpenGLlibrary\implement\glad.c" />
+    <ClCompile Include="implement\camera.cpp" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\camera.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -77,9 +81,9 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>bin\build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>include;$(IncludePath)</IncludePath>
-    <LibraryPath>lib;$(LibraryPath)</LibraryPath>
-    <SourcePath>implement;$(SourcePath)</SourcePath>
+    <IncludePath>include;D:\Coding\library\OpenGLlibrary\include;$(IncludePath)</IncludePath>
+    <LibraryPath>lib;D:\Coding\library\OpenGLlibrary\lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -93,9 +97,9 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>bin\build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>include;$(IncludePath)</IncludePath>
-    <LibraryPath>lib;$(LibraryPath)</LibraryPath>
-    <SourcePath>implement;$(SourcePath)</SourcePath>
+    <IncludePath>include;D:\Coding\library\OpenGLlibrary\include;$(IncludePath)</IncludePath>
+    <LibraryPath>lib;D:\Coding\library\OpenGLlibrary\lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
