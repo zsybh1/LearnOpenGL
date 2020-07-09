@@ -34,11 +34,12 @@ int main() {
     
     Object_Manager objectManager;
     objectManager.load(Object::rectangle);
+    objectManager.load(Object::sphere_normal);
+    objectManager.load(Object::cube_normal_texture);
 
     Shader squareShader("shaders/normal_square.vs", "shaders/normal_square.fs");
     
     
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));
 
     while (!glfwWindowShouldClose(window)) {
         Sleep(1000 / MAX_FRAME_PER_SECOND);
@@ -53,11 +54,18 @@ int main() {
 
         glm::mat4 perspective = glm::perspective(glm::radians(camera.fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.view_matrix();
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));
+
         squareShader.use();
         squareShader.setMat4("perspective", perspective);
         squareShader.setMat4("model", model);
         squareShader.setMat4("view", view);
+        objectManager.draw(Object::sphere_normal);
+        model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, -9.0f));
+        squareShader.setMat4("model", model);
         objectManager.draw(Object::rectangle);
+        squareShader.setMat4("model", glm::mat4(1.0f));
+        objectManager.draw(Object::cube_normal_texture);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -92,11 +100,15 @@ void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         camera.pos -= glm::normalize(glm::cross(camera.worldUp, -camera.towards)) * moveSpeed;
     }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        camera.pos += camera.worldUp * moveSpeed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        camera.pos -= camera.worldUp * moveSpeed;
+    }
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
     SCR_HEIGHT = height;
     SCR_WIDTH = width;
