@@ -12,14 +12,14 @@ public:
     unsigned texture;
 
     Texture() = default;
-    Texture(const std::string& path, bool SRGB = true) {
+    Texture(const std::string& path, bool SRGB = true, int warpSetting = GL_REPEAT) {
         stbi_set_flip_vertically_on_load(true);
 
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
         // set texture options
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, warpSetting);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, warpSetting);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         int width, height, nrChannels;

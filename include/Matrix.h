@@ -46,22 +46,29 @@ public:
         return projection;
     }
 
-    static Mat4f Translation(const Vec3f& dir)
-    {
+    static Mat4f Translation(float x, float y, float z) {
         Mat4f translation;
-        translation << 1, 0, 0, dir[0], 0, 1, 0, dir[1], 0, 0, 1,
-            dir[2], 0, 0, 0, 1;
+        translation << 1, 0, 0, x, 0, 1, 0, y, 0, 0, 1,
+            z, 0, 0, 0, 1;
 
         return translation;
     }
+    static Mat4f Translation(const Vec3f& dir){
+        return Translation(dir.x(), dir.y(), dir.z());
+    }
 
-    static Mat4f Scale(const Vec3f& coef) {
+    static Mat4f Scale(float x, float y, float z) {
         Mat4f scale = Mat4f::Identity();
-        scale(0, 0) = coef[0];
-        scale(1, 1) = coef[1];
-        scale(2, 2) = coef[2];
-
+        scale(0, 0) = z;
+        scale(1, 1) = y;
+        scale(2, 2) = z;
         return scale;
+    }
+    static Mat4f Scale(float coef) {
+        return Scale(coef, coef, coef);
+    }
+    static Mat4f Scale(const Vec3f& coef) {
+        return Scale(coef.x(), coef.y(), coef.z());
     }
 
     static Mat4f LookAt(const Vec3f& location, const Vec3f& target, const Vec3f& up) {

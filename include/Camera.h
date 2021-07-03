@@ -9,7 +9,7 @@ class Camera {
 public:
 
     float mouseSensitivity = 0.1f;
-    float cameraSpeed = 2.5f;
+    float cameraSpeed = 5.f;
 
     Vec3f front;
     Vec3f up;

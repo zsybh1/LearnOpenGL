@@ -15,7 +15,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 
 
 function(configure_executable_target target_name addition_file)
@@ -35,7 +35,8 @@ target_link_libraries(${target_name}
 endfunction()
 
 configure_executable_target(main "src/main.cpp")
-configure_executable_target(example_example "example/example.cpp")
+configure_executable_target(example "example/example.cpp")
+configure_executable_target(blending_transparent "example/Blending/transparent.cpp")
 
 set(destAssets ${EXECUTABLE_OUTPUT_PATH}/assets)
 file(GLOB assets LIST_DIRECTORIES true ${destAssets})
