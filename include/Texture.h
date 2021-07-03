@@ -12,6 +12,7 @@ public:
     unsigned texture;
 
     Texture() = default;
+    explicit Texture(unsigned tex) : texture(tex) {}
     Texture(const std::string& path, bool SRGB = true, int warpSetting = GL_REPEAT) {
         stbi_set_flip_vertically_on_load(true);
 
