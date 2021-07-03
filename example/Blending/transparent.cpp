@@ -18,7 +18,8 @@ private:
     virtual void InitContext() override {
         Application::InitContext();
         glEnable(GL_DEPTH_TEST);
-
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
     virtual void InitData() override {
         float xz_rect[] = {
@@ -51,6 +52,7 @@ private:
 
         objects.push_back(New<IndexObject>(xy_rect, sizeof(xy_rect), std::initializer_list<int>{3, 2}, rect_ind, sizeof(rect_ind)));
         textures.push_back(New<Texture>("Assets/Texture/grass.png", true, GL_CLAMP_TO_EDGE));
+        textures.push_back(New<Texture>("Assets/Texture/transparent_window.png", true, GL_CLAMP_TO_EDGE));
         shaders.push_back(New<Shader>("Assets/Shader/default.vert", "Assets/Shader/Blending/transparentCut.frag"));
 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -92,7 +94,7 @@ private:
             ImGui::DragFloat("moving speed", &camera.cameraSpeed, 0.01f, 0.1f, 10.f);
             ImGui::DragFloat("mouse sensitivity", &camera.mouseSensitivity, 0.005f, 0.0f, 0.3f);
             ImGui::DragFloat("fov", &fov, 1.0f, 1.f, 179.0f);
-            //ImGui::ColorEdit3("foreground color", (float*)&foreground);
+            ImGui::ColorEdit3("background color", (float*)&background);
             ImGui::End();
 
             ImGui::Begin("Information");
@@ -141,6 +143,7 @@ private:
             textures[0]->Use(0);
             objects[1]->Draw();
 
+            // Draw grass (transparent discard)
             model = Matrix::Translation(-2.0f, 0.5f, 2.0f);
             shaders[3]->Use();
             shaders[3]->SetMat4f("model", model)
@@ -148,6 +151,27 @@ private:
                 .SetMat4f("projection", projection);
             textures[1]->Use(0);
             objects[2]->Draw();
+
+            // Set window position and sort
+            std::map<float, Vec3f, std::greater<float>> distance_model;
+            Vec3f translation_dir(2.0f, 0.5f, 1.0f);
+            for (int i = 0; i < 10; ++i) {
+                float dist = (translation_dir - camera.pos).squaredNorm();
+                distance_model[dist] = translation_dir;
+                translation_dir += Vec3f(-0.1f, 0.0f, -0.3f);
+            }
+
+            // Draw window (semi-transparent)
+            shaders[2]->Use();
+            shaders[2]->SetMat4f("view", camera.ViewMatrix())
+                .SetMat4f("projection", projection);
+            for (auto& item: distance_model) {
+                model = Matrix::Translation(item.second);
+                shaders[2]->SetMat4f("model", model);
+                textures[2]->Use(0);
+                objects[2]->Draw();
+            }
+
 
 
             ImGui::Render();
