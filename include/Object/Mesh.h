@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../global.h"
-#include "IndexObject.h"
+#include <global.h>
+#include <Object/IndexObject.h>
 #include <OBJ_Loader.h>
-#include "../Shader.h"
-#include "../Texture.h"
+#include <Shader.h>
+#include <Texture/TextureLoader.h>
 
 namespace psi{
 
@@ -110,7 +110,7 @@ private:
     void LoadTexture(const std::string& name) {
         if (name != "") {
             if (textures.find(name) == textures.cend()) {
-                textures[name] = New<Texture>(pathPrefix + name, false);
+                textures[name] = TextureLoader::LoadTexture(pathPrefix + name, false);
             }
         }
     }
