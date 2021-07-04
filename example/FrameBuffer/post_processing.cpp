@@ -77,7 +77,7 @@ private:
         shaders.push_back(New<Shader>("Assets/Shader/light.vert", "Assets/Shader/light.frag"));
 
         objects.push_back(New<IndexObject>(xy_rect, sizeof(xy_rect), std::initializer_list<int>{3, 2}, rect_ind, sizeof(rect_ind)));
-        shaders.push_back(New<Shader>("Assets/Shader/FrameBuffer/direct.vert", "Assets/Shader/FrameBuffer/blur.frag"));
+        shaders.push_back(New<Shader>("Assets/Shader/FrameBuffer/direct.vert", "Assets/Shader/FrameBuffer/greyscale.frag"));
 
         textures.push_back(New<Texture>(textureColor));
 
