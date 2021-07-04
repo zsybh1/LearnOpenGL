@@ -40,6 +40,7 @@ configure_executable_target(blending_transparent "example/Blending/transparent.c
 configure_executable_target(framebuffer_post_processing "example/FrameBuffer/post_processing.cpp")
 configure_executable_target(cubemap_skybox "example/CubeMap/skybox.cpp")
 configure_executable_target(geometry_show_normal "example/Geometry/show_normal.cpp")
+configure_executable_target(instancing_asteroid_field "example/Instancing/asteroid_field.cpp")
 
 set(destAssets ${EXECUTABLE_OUTPUT_PATH}/assets)
 file(GLOB assets LIST_DIRECTORIES true ${destAssets})

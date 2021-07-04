@@ -48,7 +48,7 @@ public:
     virtual ~Object() {
         glDeleteVertexArrays(1, &VAO);
     };
-protected:
+
     int vertexNum = 0;
 };
 
