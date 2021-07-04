@@ -23,10 +23,10 @@ private:
     virtual void InitData() override {
 
         float xz_rect[] = {
-             0.5f,  0.0f, 0.5f,  1.f, 1.f,
-             0.5f,  0.0f, -0.5f, 1.f, 0.f,
-            -0.5f,  0.0f, -0.5f, 0.f, 0.f,
-            -0.5f,  0.0f, 0.5f,  0.f, 1.f
+             0.5f,  0.0f, 0.5f,  0.f, 1.f, 0.f,
+             0.5f,  0.0f, -0.5f, 0.f, 1.f, 0.f,
+            -0.5f,  0.0f, -0.5f, 0.f, 1.f, 0.f,
+            -0.5f,  0.0f, 0.5f,  0.f, 1.f, 0.f
         };
         unsigned int rect_ind[] = {
             0, 1, 3,   // first triangle
@@ -48,13 +48,15 @@ private:
         objects.push_back(New<Object>(Prefab::cube, sizeof(Prefab::cube), std::initializer_list<int>{3}));
         shaders.push_back(New<Shader>("Assets/Shader/light.vert", "Assets/Shader/light.frag"));
 
-        objects.push_back(New<IndexObject>(xz_rect, sizeof(xz_rect), std::initializer_list<int>{3, 2}, rect_ind, sizeof(rect_ind)));
+        objects.push_back(New<IndexObject>(xz_rect, sizeof(xz_rect), std::initializer_list<int>{3, 3}, rect_ind, sizeof(rect_ind)));
         textures.push_back(TextureLoader::LoadTexture("Assets/Texture/marble.jpg"));
-        shaders.push_back(New<Shader>("Assets/Shader/default.vert", "Assets/Shader/default.frag"));
+        shaders.push_back(New<Shader>("Assets/Shader/Cubemap/reflect.vert", "Assets/Shader/Cubemap/reflect.frag"));
 
         textures.push_back(TextureLoader::LoadCubemap(cubemap_path));
         shaders.push_back(New<Shader>("Assets/Shader/Cubemap/skybox.vert", "Assets/Shader/Cubemap/skybox.frag"));
 
+        objects.push_back(New<Object>(Prefab::cubeWithNormal, sizeof(Prefab::cubeWithNormal), std::initializer_list<int>{3, 3}));
+        shaders.push_back(New<Shader>("Assets/Shader/Cubemap/reflect.vert", "Assets/Shader/Cubemap/refract.frag"));
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
@@ -74,6 +76,7 @@ private:
         Vec3f lightPos(0.f, 5.f, 0.f);
         Vec3f lightColorBase(1.f, 1.f, 1.f);
         float lightColorCoef = 2.5f;
+        float ior = 1.45f;;
 
         Vec3f background = Vec3f(0.f, 0.f, 0.f);
         //Vec3f foreground = Vec3f(0.3f, 0.4f, 0.8f);
@@ -92,7 +95,7 @@ private:
             ImGui::DragFloat("moving speed", &camera.cameraSpeed, 0.01f, 0.1f, 10.f);
             ImGui::DragFloat("mouse sensitivity", &camera.mouseSensitivity, 0.005f, 0.0f, 0.3f);
             ImGui::DragFloat("fov", &fov, 1.0f, 1.f, 179.0f);
-            //ImGui::ColorEdit3("foreground color", (float*)&foreground);
+            ImGui::DragFloat("ior", &ior, 0.01f, 1.f, 20.0f);
             ImGui::End();
 
             ImGui::Begin("Information");
@@ -140,8 +143,10 @@ private:
             shaders[2]->Use();
             shaders[2]->SetMat4f("model", model)
                 .SetMat4f("view", camera.ViewMatrix())
-                .SetMat4f("projection", projection);
-            textures[0]->Use(0);
+                .SetMat4f("projection", projection)
+                .SetMat4f("normalTransform", model)
+                .SetVec3f("viewPos", camera.pos);
+            textures[1]->Use();
             objects[1]->Draw();
 
             // Draw Light
@@ -153,7 +158,16 @@ private:
                 .SetVec3f("color", lightColorBase);
             objects[0]->Draw();
 
-
+            // Draw glass
+            shaders[4]->Use();
+            shaders[4]->SetMat4f("model", Matrix::Translation(2.0f, 2.0f, 3.0f))
+                .SetMat4f("view", camera.ViewMatrix())
+                .SetMat4f("projection", projection)
+                .SetMat4f("normalTransform", Mat4f::Identity())
+                .SetVec3f("viewPos", camera.pos)
+                .SetFloat("ior", ior);
+            textures[1]->Use();
+            objects[2]->Draw();
 
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
