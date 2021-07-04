@@ -13,6 +13,7 @@ public:
     unsigned ID;
 
     Shader(const std::string& vertex, const std::string& fragment);
+    Shader(const std::string& vertex, const std::string& geometry, const std::string& fragment);
 
     void Use() { glUseProgram(ID); }
 
@@ -41,10 +42,12 @@ private:
     enum class Type {
         program,
         vertex,
-        fragment
+        fragment,
+        geometry
     };
 
     void CheckCompileError(unsigned id, Type type);
+    unsigned GenShader(const std::string& path, Type type);
 };
 
 }

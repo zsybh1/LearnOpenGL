@@ -1,36 +1,8 @@
 namespace psi {
 
 inline Shader::Shader(const std::string& vertex, const std::string& fragment) {
-    std::ifstream vertFile(vertex);
-    std::ifstream fragFile(fragment);
-    if (!vertFile.is_open()) {
-        std::cout << "ERROR::SHADER::VERTEX::NOT_EXIST" << std::endl;
-    }
-    if (!fragFile.is_open()) {
-        std::cout << "ERROR::SHADER::FRAGMENT::NOT_EXIST" << std::endl;
-    }
-    std::string vertStr;
-    std::string fragStr;
-    std::stringstream vertss;
-    std::stringstream fragss;
-    vertss << vertFile.rdbuf();
-    fragss << fragFile.rdbuf();
-    vertStr = vertss.str();
-    fragStr = fragss.str();
-
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const char* cVertStr = vertStr.c_str();
-    glShaderSource(vertexShader, 1, &cVertStr, NULL);
-    glCompileShader(vertexShader);
-    CheckCompileError(vertexShader, Type::vertex);
-
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* cFragStr = fragStr.c_str();
-    glShaderSource(fragmentShader, 1, &cFragStr, NULL);
-    glCompileShader(fragmentShader);
-    CheckCompileError(fragmentShader, Type::fragment);
+    unsigned vertexShader = GenShader(vertex, Type::vertex);
+    unsigned fragmentShader = GenShader(fragment, Type::fragment);
 
     // link shader program
     unsigned int shaderProgram;
@@ -44,6 +16,29 @@ inline Shader::Shader(const std::string& vertex, const std::string& fragment) {
     // delete object after link
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    ID = shaderProgram;
+}
+
+inline Shader::Shader(const std::string& vertex, const std::string& geometry, const std::string& fragment) {
+    unsigned vertexShader = GenShader(vertex, Type::vertex);
+    unsigned fragmentShader = GenShader(fragment, Type::fragment);
+    unsigned geometryShader = GenShader(geometry, Type::geometry);
+
+    // link shader program
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glAttachShader(shaderProgram, geometryShader);
+    glLinkProgram(shaderProgram);
+
+    CheckCompileError(shaderProgram, Type::program);
+
+    // delete object after link
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    glDeleteShader(geometryShader);
 
     ID = shaderProgram;
 }
@@ -69,8 +64,52 @@ inline void Shader::CheckCompileError(unsigned id, Type type) {
             else if (type == Type::fragment) {
                 std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
             }
+            else if (type == Type::geometry) {
+                std::cout << "ERROR::SHADER::GEOMETRY::COMPILATION_FAILED\n" << infoLog << std::endl;
+            }
         }
     }
+}
+
+unsigned Shader::GenShader(const std::string& path, Type type) {
+    int target = 0;
+    std::string name;
+    switch (type)
+    {
+    case psi::Shader::Type::vertex:
+        target = GL_VERTEX_SHADER;
+        name = "VERTEX";
+        break;
+    case psi::Shader::Type::fragment:
+        target = GL_FRAGMENT_SHADER;
+        name = "FRAGMENT";
+        break;
+    case psi::Shader::Type::geometry:
+        target = GL_GEOMETRY_SHADER;
+        name = "GEOMETRY";
+        break;
+    default:
+        std::cout << "ERROR::SHADER::UNKNOWN_ERROR\n" << std::endl;
+        break;
+    }
+
+    std::ifstream shaderFile(path);
+    if (!shaderFile.is_open()) {
+        std::cout << "ERROR::SHADER::" << name << "::NOT_EXIST" << std::endl;
+    }
+    std::string shaderStr;
+    std::stringstream shaderss;
+    shaderss << shaderFile.rdbuf();
+    shaderStr = shaderss.str();
+
+    unsigned int shader;
+    shader = glCreateShader(target);
+    const char* cStr = shaderStr.c_str();
+    glShaderSource(shader, 1, &cStr, NULL);
+    glCompileShader(shader);
+    CheckCompileError(shader, type);
+
+    return shader;
 }
 
 }
