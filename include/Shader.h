@@ -15,7 +15,10 @@ public:
     Shader(const std::string& vertex, const std::string& fragment);
     Shader(const std::string& vertex, const std::string& geometry, const std::string& fragment);
 
-    void Use() { glUseProgram(ID); }
+    Shader& Use() { 
+        glUseProgram(ID); 
+        return *this;
+    }
 
     Shader& SetInt(const std::string& name, int value) {
         glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
@@ -36,6 +39,9 @@ public:
     Shader& SetMat4f(const std::string& name, const Mat4f& value) {
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value.data());
         return *this;
+    }
+    Shader& SetMVP(const Mat4f& model, const Mat4f& view, const Mat4f& projection) {
+        return SetMat4f("model", model).SetMat4f("view", view).SetMat4f("projection", projection);
     }
 
 private:

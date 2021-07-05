@@ -7,12 +7,14 @@ namespace psi {
 class IndexObject : public Object {
 public:
     IndexObject() = default;
+    IndexObject(const std::vector<float>& vertices, const std::initializer_list<int>& split, const std::vector<unsigned>& indices)
+        : IndexObject(vertices.data(), vertices.size()*sizeof(float), split, indices.data(), indices.size() * sizeof(unsigned)) {}
     // vertices : 顶点数据
     // verticeSize : 顶点数据占内存的总长，字节单位
     // split : 顶点数据的分割方法
     // indices : 索引数据
     // indiceSize : 索引数据占内存的总长，字节单位
-    IndexObject(const float* vertices, size_t verticeSize, std::initializer_list<int> split, const unsigned* indices, size_t indiceSize) {
+    IndexObject(const float* vertices, size_t verticeSize, const std::initializer_list<int>& split, const unsigned* indices, size_t indiceSize) {
         unsigned int VBO;
         glGenBuffers(1, &VBO);
         glGenVertexArrays(1, &VAO);

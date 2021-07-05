@@ -15,12 +15,12 @@ uniform int illum;
 
 uniform float uKa = 1.0;
 
-uniform bool UseKaMap;
-uniform bool UseKdMap;
-uniform bool UseKsMap;
-uniform bool UseNsMap;
-uniform bool UseDMap;
-uniform bool UseBumpMap;
+uniform bool UseKaMap = false;
+uniform bool UseKdMap = false;
+uniform bool UseKsMap = false;
+uniform bool UseNsMap = false;
+uniform bool UseDMap = false;
+uniform bool UseBumpMap = false;
 
 uniform sampler2D map_Ka;
 uniform sampler2D map_Kd;
@@ -37,7 +37,6 @@ void main()
 {
     vec3 ka = UseKaMap? texture(map_Ka, texcoord).xyz : Ka;
     vec3 kd = UseKdMap? texture(map_Kd, texcoord).xyz : Kd;
-    kd = pow(kd, vec3(2.2));
     vec3 ks = UseKsMap? texture(map_Ks, texcoord).xyz : Ks;
     float ns = UseNsMap? texture(map_Ns, texcoord).x : Ns;
 

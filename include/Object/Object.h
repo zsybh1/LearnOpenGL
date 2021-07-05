@@ -9,10 +9,13 @@ public:
     unsigned VAO = 0;
 
     Object() = default;
+    Object(unsigned vao, int vertNum) : VAO(vao), vertexNum(vertNum) {}
+    Object(const std::vector<float>& vertices, const std::initializer_list<int>& split)
+        : Object(vertices.data(), vertices.size() * sizeof(float), split) {}
     // vertices : 顶点数据
     // verticeSize : 顶点数据占内存的总长，字节单位
     // split : 顶点数据的分割方法
-    Object(const float* vertices, size_t verticeSize, std::initializer_list<int> split) {
+    Object(const float* vertices, size_t verticeSize, const std::initializer_list<int>& split) {
         // create object to save data
         unsigned int VBO;
         glGenBuffers(1, &VBO);

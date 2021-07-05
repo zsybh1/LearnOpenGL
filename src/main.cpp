@@ -1,4 +1,4 @@
-#include "Application/DefaultApp2.h"
+#include "Application/CameraApp.h"
 using namespace psi;
 
 int main(){

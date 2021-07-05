@@ -17,9 +17,10 @@ public:
 
     Vec3f pos;
     Vec3f worldUp;
-    float yaw;
-    float pitch;
+    float yaw = 0.f;
+    float pitch = 0.f;
 
+    Camera() {}
     Camera(const Vec3f& Pos, const Vec3f& Up, float Yaw, float Pitch) : 
         pos(Pos), worldUp(Up.normalized()), yaw(Yaw), pitch(Pitch){ 
         UpdateAxis();
