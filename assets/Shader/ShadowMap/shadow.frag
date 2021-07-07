@@ -29,9 +29,24 @@ uniform sampler2D map_Ns;
 uniform sampler2D map_d;
 uniform sampler2D map_bump;
 
+uniform sampler2D map_shadow;
+uniform float shadow_bias;
+
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 uniform vec3 viewPos;
+
+in vec4 light_space_pos;
+
+float calc_shadow() {
+    vec3 light_ndc_pos = (light_space_pos.xyz / light_space_pos.w) * 0.5 + 0.5;
+    float cur_depth = light_ndc_pos.z;
+    if (cur_depth >= 1.0 || light_ndc_pos.x >= 1.0 || light_ndc_pos.y >= 1.0) {
+        return 0.0;
+    }
+    float shadow_depth = texture(map_shadow, light_ndc_pos.xy).x;
+    return cur_depth - shadow_bias > shadow_depth ? 1.0 : 0.0;
+}
 
 void main()
 {
@@ -58,6 +73,6 @@ void main()
         diffuse =  vec3(max(cosnl, 0.0));
         specular = ks * pow(max(dot(norm, halfVec), 0.0), ns);
     }
-    vec3 finalColor = (ambient + diffuse + specular) * objectColor * lightIntensity;
+    vec3 finalColor = (ambient + (1 - calc_shadow()) * (diffuse + specular)) * objectColor * lightIntensity;
     FragColor = vec4(pow(finalColor, vec3(1.0/2.2)), 1.0);
 }

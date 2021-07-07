@@ -46,6 +46,15 @@ public:
         return projection;
     }
 
+    static Mat4f Ortho(float l, float r, float b, float t, float n, float f) {
+        Mat4f ortho = Mat4f::Identity();
+        ortho << 2 / (r - l), 0, 0, (r + l) / (l - r),
+            0, 2 / (t - b), 0, (b + t) / (b - t),
+            0, 0, 2 / (n - f), (f + n) / (n - f),
+            0, 0, 0, 1;
+        return ortho;
+    }
+
     static Mat4f Translation(float x, float y, float z) {
         Mat4f translation;
         translation << 1, 0, 0, x, 0, 1, 0, y, 0, 0, 1,
