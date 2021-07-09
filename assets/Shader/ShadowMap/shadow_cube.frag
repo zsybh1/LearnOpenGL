@@ -29,34 +29,25 @@ uniform sampler2D map_Ns;
 uniform sampler2D map_d;
 uniform sampler2D map_bump;
 
-uniform sampler2D map_shadow;
-uniform float shadow_bias;
+uniform samplerCube map_shadow;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 uniform vec3 viewPos;
 
-in vec4 light_space_pos;
+uniform float lightFarPlane;
 
 float calc_shadow() {
-    vec3 light_ndc_pos = (light_space_pos.xyz / light_space_pos.w) * 0.5 + 0.5;
-    float cur_depth = light_ndc_pos.z;
-    // handle the points out of frustum
-    if (cur_depth >= 1.0 || light_ndc_pos.x >= 1.0 || light_ndc_pos.y >= 1.0) {
+    vec3 lightRay = fragPos - lightPos;
+    float cur_depth = length(lightRay) / lightFarPlane;
+    // handle the points out of view
+    if (cur_depth >= 1.0) {
         return 0.0;
     }
 
-    ivec2 texSize = textureSize(map_shadow, 0);
-    vec2 texel = 1.0 / texSize;
+    vec4 texResult = texture(map_shadow, lightRay);
 
-    float shadow_count = 0.0;
-    for (int i = -1; i <= 1; ++i){
-        for (int j = -1; j <= 1; ++j){
-            float shadow_depth = texture(map_shadow, light_ndc_pos.xy + vec2(i, j) * texel).x;
-            shadow_count += cur_depth - shadow_bias > shadow_depth ? 1.0 : 0.0;
-        }
-    }
-    return shadow_count / 9.0;
+    return texResult.x < cur_depth ? 1.0 : 0.0;
 }
 
 void main()
