@@ -3,7 +3,6 @@
 #include <Shader.h>
 #include <Matrix.h>
 #include <Camera.h>
-#include <Prefab.h>
 #include <Object/IndexObject.h>
 #include <Texture/TextureLoader.h>
 #include <Object/Mesh.h>

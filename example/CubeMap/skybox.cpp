@@ -1,9 +1,9 @@
+
 #pragma once
 #include <Application.h>
 #include <Shader.h>
 #include <Matrix.h>
 #include <Camera.h>
-#include <Prefab.h>
 #include <Object/IndexObject.h>
 #include <Texture/TextureLoader.h>
 #include <Object/Mesh.h>
@@ -40,22 +40,28 @@ private:
             "assets/Texture/learnopengl_skybox/front.jpg",
             "assets/Texture/learnopengl_skybox/back.jpg"
         };
+        float cube[] = {
+            #include <Prefab/cube.data>
+        };
+        float cube_normal[] = {
+            #include <Prefab/cube_normal.data>
+        };
 
 
         meshes.push_back(New<Mesh>("Assets/Mesh/mary/marry.obj"));
         shaders.push_back(New<Shader>("Assets/Shader/MeshBlinnPhong.vert", "Assets/Shader/MeshBlinnPhong.frag"));
 
-        objects.push_back(New<Object>(Prefab::cube, sizeof(Prefab::cube), std::initializer_list<int>{3}));
+        objects.push_back(New<Object>(cube, sizeof(cube), std::vector{3}));
         shaders.push_back(New<Shader>("Assets/Shader/light.vert", "Assets/Shader/light.frag"));
 
-        objects.push_back(New<IndexObject>(xz_rect, sizeof(xz_rect), std::initializer_list<int>{3, 3}, rect_ind, sizeof(rect_ind)));
+        objects.push_back(New<IndexObject>(xz_rect, sizeof(xz_rect), std::vector{3, 3}, rect_ind, sizeof(rect_ind)));
         textures.push_back(TextureLoader::LoadTexture("Assets/Texture/marble.jpg"));
         shaders.push_back(New<Shader>("Assets/Shader/Cubemap/reflect.vert", "Assets/Shader/Cubemap/reflect.frag"));
 
         textures.push_back(TextureLoader::LoadCubemap(cubemap_path));
         shaders.push_back(New<Shader>("Assets/Shader/Cubemap/skybox.vert", "Assets/Shader/Cubemap/skybox.frag"));
 
-        objects.push_back(New<Object>(Prefab::cubeWithNormal, sizeof(Prefab::cubeWithNormal), std::initializer_list<int>{3, 3}));
+        objects.push_back(New<Object>(cube_normal, sizeof(cube_normal), std::vector{3, 3}));
         shaders.push_back(New<Shader>("Assets/Shader/Cubemap/reflect.vert", "Assets/Shader/Cubemap/refract.frag"));
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }

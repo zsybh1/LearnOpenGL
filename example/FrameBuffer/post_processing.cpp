@@ -3,9 +3,7 @@
 #include <Shader.h>
 #include <Matrix.h>
 #include <Camera.h>
-#include <Prefab.h>
 #include <Object/IndexObject.h>
-#include <Texture.h>
 #include <Object/Mesh.h>
 
 namespace psi {
@@ -70,19 +68,22 @@ private:
             0, 1, 3,   // first triangle
             1, 2, 3    // second triangle
         };
+        float cube[] = {
+            #include <Prefab/cube.data>
+        };
         meshes.push_back(New<Mesh>("Assets/Mesh/mary/marry.obj"));
         shaders.push_back(New<Shader>("Assets/Shader/MeshBlinnPhong.vert", "Assets/Shader/MeshBlinnPhong.frag"));
 
-        objects.push_back(New<Object>(Prefab::cube, sizeof(Prefab::cube), std::initializer_list<int>{3}));
+        objects.push_back(New<Object>(cube, sizeof(cube), std::vector{3}));
         shaders.push_back(New<Shader>("Assets/Shader/light.vert", "Assets/Shader/light.frag"));
 
-        objects.push_back(New<IndexObject>(xy_rect, sizeof(xy_rect), std::initializer_list<int>{3, 2}, rect_ind, sizeof(rect_ind)));
+        objects.push_back(New<IndexObject>(xy_rect, sizeof(xy_rect), std::vector{3, 2}, rect_ind, sizeof(rect_ind)));
         shaders.push_back(New<Shader>("Assets/Shader/FrameBuffer/direct.vert", "Assets/Shader/FrameBuffer/greyscale.frag"));
 
         textures.push_back(New<Texture>(textureColor));
 
-        objects.push_back(New<IndexObject>(xz_rect, sizeof(xz_rect), std::initializer_list<int>{3, 2}, rect_ind, sizeof(rect_ind)));
-        textures.push_back(New<Texture>("Assets/Texture/marble.jpg"));
+        objects.push_back(New<IndexObject>(xz_rect, sizeof(xz_rect), std::vector{3, 2}, rect_ind, sizeof(rect_ind)));
+        textures.push_back(TextureLoader::LoadTexture("Assets/Texture/marble.jpg"));
         shaders.push_back(New<Shader>("Assets/Shader/default.vert", "Assets/Shader/default.frag"));
 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

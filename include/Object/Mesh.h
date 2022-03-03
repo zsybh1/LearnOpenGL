@@ -90,7 +90,7 @@ private:
         if (loader.LoadFile(path)) {
             for (auto& mesh : loader.LoadedMeshes) {
                 parts.push_back(New<IndexObject>((float*)mesh.Vertices.data(), mesh.Vertices.size() * sizeof(objl::Vertex),
-                    std::initializer_list<int>{3, 3, 2}, (unsigned*)mesh.Indices.data(), mesh.Indices.size() * sizeof(unsigned)));
+                    std::vector{3, 3, 2}, (unsigned*)mesh.Indices.data(), mesh.Indices.size() * sizeof(unsigned)));
                 materials.push_back(mesh.MeshMaterial);
                 LoadTexture(mesh.MeshMaterial.map_Ka);
                 LoadTexture(mesh.MeshMaterial.map_Kd);
@@ -104,7 +104,7 @@ private:
             std::cout << "Failed to load model " << path << std::endl;
         }
     }
-    Vec3f trans(objl::Vector3 vec) {
+    Vec3f trans(objl::Vector3& vec) {
         return Vec3f(vec.X, vec.Y, vec.Z);
     }
     void LoadTexture(const std::string& name) {

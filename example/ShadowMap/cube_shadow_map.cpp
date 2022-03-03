@@ -46,7 +46,7 @@ private:
 
         // init frame buffer
         glGenFramebuffers(1, &depth_map_fbo);
-
+        
         // depth cubemap
         unsigned depth_texture;
         glGenTextures(1, &depth_texture);
@@ -82,7 +82,6 @@ private:
         shaders["shadow"] = New<Shader>("Assets/Shader/ShadowMap/shadow_cube.vert", "Assets/Shader/ShadowMap/shadow_cube.frag");
         shaders["depth_map"] = New<Shader>("Assets/Shader/ShadowMap/depth_cubemap.vert", "Assets/Shader/ShadowMap/depth_cubemap.geom", "Assets/Shader/ShadowMap/depth_cubemap.frag");
         shaders["show_texture"] = New<Shader>("Assets/Shader/ShadowMap/show_texture.vert", "Assets/Shader/ShadowMap/show_texture_depth.frag");
-
         // ======= End init data ==========
 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

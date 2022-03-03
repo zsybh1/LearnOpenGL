@@ -44,6 +44,8 @@ configure_executable_target(instancing_asteroid_field "example/Instancing/astero
 configure_executable_target(shadow_map_origin "example/ShadowMap/origin.cpp")
 configure_executable_target(shadow_map "example/ShadowMap/shadow_map.cpp")
 configure_executable_target(cube_shadow_map "example/ShadowMap/cube_shadow_map.cpp")
+configure_executable_target(normal_mapping "example/Mapping/normal_mapping.cpp")
+configure_executable_target(parallax_mapping "example/Mapping/parallax_mapping.cpp")
 
 set(destAssets ${EXECUTABLE_OUTPUT_PATH}/assets)
 file(GLOB assets LIST_DIRECTORIES true ${destAssets})
