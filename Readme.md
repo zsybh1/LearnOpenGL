@@ -47,3 +47,4 @@ Mapping/parallax_mapping ：视差贴图，从右往左分别为普通的视差�
 
 ![image-20220303125828681](https://raw.githubusercontent.com/zsybh1/ImageBed/master/img/20220303125831.png)
 
+DeferredShading/deferred_shading.cpp：延迟渲染

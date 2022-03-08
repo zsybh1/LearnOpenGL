@@ -86,6 +86,16 @@ public:
         return New<Cubemap>(textureID);
     }
 
+    static Ptr<Texture> FrameBufferTarget(int width, int height, int glFormat = GL_RGBA, int glType = GL_UNSIGNED_BYTE) {
+        unsigned int texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, glFormat, width, height, 0, GL_RGBA, glType, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        return New<Texture>(texture);
+    }
 };
 
 }

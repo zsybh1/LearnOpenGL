@@ -80,10 +80,15 @@ void main()
     vec3 ambient = uKa * ka;
     vec3 diffuse = vec3(0.0);
     vec3 specular = vec3(0.0);
+    vec3 color = vec3(0.0);
     if (cosnl > 0.0) {
         diffuse =  vec3(max(cosnl, 0.0));
         specular = ks * pow(max(dot(norm, halfVec), 0.0), ns);
+        color = (1 - calc_shadow()) * (diffuse + specular);
     }
-    vec3 finalColor = (ambient + (1 - calc_shadow()) * (diffuse + specular)) * objectColor * lightIntensity;
+
+
+
+    vec3 finalColor = (ambient + color) * objectColor * lightIntensity;
     FragColor = vec4(pow(finalColor, vec3(1.0/2.2)), 1.0);
 }

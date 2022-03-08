@@ -1,5 +1,6 @@
 #include <Application/CameraApp.h>
 #include <Object/Mesh.h>
+#include <FrameBuffer.h>
 
 namespace psi {
 
@@ -14,6 +15,7 @@ private:
     Hashmap<std::string, Ptr<Object>> objects;
     Hashmap<std::string, Ptr<Texture>> textures;
     Hashmap<std::string, Ptr<Shader>> shaders;
+    Ptr<FrameBuffer> gBuffer;
 
     virtual void InitContext() override {
         CameraApp::InitContext();
@@ -43,31 +45,16 @@ private:
             #include <Prefab/rect_index.data>
         };
 
-        // init frame buffer
-        glGenFramebuffers(1, &depth_map_fbo);
 
-        // depth texture
-        unsigned depth_texture;
-        glGenTextures(1, &depth_texture);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, depth_map_width, depth_map_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        gBuffer = New<FrameBuffer>();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_texture, 0);
-        glReadBuffer(GL_NONE);
-        glDrawBuffer(GL_NONE);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        
-        textures["depth_map"] = New<Texture>(depth_texture);
         textures["floor"] = TextureLoader::LoadTexture("assets/Texture/marble.jpg", false);
         textures["box"] = TextureLoader::LoadTexture("assets/Texture/container.png", false);
         textures["box_specular"] = TextureLoader::LoadTexture("assets/Texture/container_specular.png", false);
+
+        textures["gPosition"] = TextureLoader::FrameBufferTarget(width, height, GL_RGBA16F, GL_FLOAT);
+        textures["gNormal"] = TextureLoader::FrameBufferTarget(width, height, GL_RGBA16F, GL_FLOAT);
+        textures["gColorSpec"] = TextureLoader::FrameBufferTarget(width, height);
 
         objects["light"] = New<Object>(light_cube, Index{ 3 });
         objects["box"] = New<Object>(box_cube, Index{ 3, 3, 2 });
@@ -75,18 +62,31 @@ private:
         objects["screen"] = New<IndexObject>(screen, Index{ 3, 2 }, rect_index);
 
         shaders["light"] = New<Shader>("Assets/Shader/light.vert", "Assets/Shader/light.frag");
-        shaders["shadow"] = New<Shader>("Assets/Shader/ShadowMap/shadow.vert", "Assets/Shader/ShadowMap/shadow.frag");
-        shaders["depth_map"] = New<Shader>("Assets/Shader/ShadowMap/depth_map.vert", "Assets/Shader/ShadowMap/depth_map.frag");
-        shaders["show_texture"] = New<Shader>("Assets/Shader/ShadowMap/show_texture.vert", "Assets/Shader/ShadowMap/show_texture_depth.frag");
+        shaders["deferred_shading"] = New<Shader>("Assets/Shader/DeferredShading/DeferredShading.vert", "Assets/Shader/DeferredShading/DeferredShading.frag");
+        shaders["default"] = New<Shader>("Assets/Shader/FrameBuffer/direct.vert", "Assets/Shader/FrameBuffer/direct.frag");   // for test
+        shaders["lighting"] = New<Shader>("Assets/Shader/DeferredShading/Lighting.vert", "Assets/Shader/DeferredShading/Lighting.frag");
+
+        gBuffer->Use()
+            .AttachColorBuffer(textures["gPosition"]->texture)
+            .AttachColorBuffer(textures["gNormal"]->texture)
+            .AttachColorBuffer(textures["gColorSpec"]->texture)
+            .EndAttach();
+
+        unsigned int depth;
+        glGenRenderbuffers(1, &depth);
+        glBindRenderbuffer(GL_RENDERBUFFER, depth);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+        FrameBuffer::UseDefault();
 
         // ======= End init data ==========
 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
-    unsigned depth_map_fbo = 0;
-    int depth_map_width = 1024;
-    int depth_map_height = 1024;
 
     virtual void RunLoop() override {
 
@@ -97,7 +97,7 @@ private:
         // light properties
         Vec3f light_pos(2.f, 4.f, -0.5f);
         Vec3f light_color_base(1.f, 1.f, 1.f);
-        float light_intensity = 8.f;
+        float light_intensity = 64.f;
 
         float shadow_bias = 0.0f;
 
@@ -120,8 +120,7 @@ private:
             ImGui::ColorEdit3("background", background.data());
             ImGui::DragFloat3("light_pos", light_pos.data(), 0.1);
             ImGui::ColorEdit3("light_color_base", light_color_base.data());
-            ImGui::DragFloat("light_intensity", &light_intensity, 0.1);
-            ImGui::DragFloat("shadow_bias", &shadow_bias, 0.001f);
+            ImGui::DragFloat("light_intensity", &light_intensity, 1);
             ImGui::End();
 
             ImGui::Begin("Information");
@@ -132,31 +131,7 @@ private:
 
             // ========= Rendering code ========
 
-            // draw depth map
-            {
-                glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
-                glViewport(0, 0, depth_map_width, depth_map_height);
-                glClear(GL_DEPTH_BUFFER_BIT);
-                glCullFace(GL_FRONT);
-                Mat4f view = Matrix::LookAt(light_pos, Vec3f(0, 0, 0), Vec3f(0, 1, 0));
-                Mat4f projection = Matrix::Projection(120.f, (float)depth_map_width / depth_map_height, 0.2f, 20.f);
-                
-                // draw floor
-                Mat4f model = Matrix::Scale(16.f);
-                shaders["depth_map"]->Use().SetMVP(model, view, projection);
-                objects["floor"]->Draw();
-                // draw box
-                model = Matrix::Translation(0.f, 0.708f, 0.f) * Matrix::Rotation(Vec3f(0., 0., 1.), 45);
-                shaders["depth_map"]->SetMat4f("model", model);
-                objects["box"]->Draw();
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                glViewport(0, 0, width, height);
-
-                shaders["shadow"]->Use().SetMat4f("lightMatrix", projection * view)
-                    .SetInt("map_shadow", 3)
-                    .SetFloat("shadow_bias", shadow_bias);
-                textures["depth_map"]->Use(3);
-            }
+            gBuffer->Use();
 
             glClearColor(background.x(), background.y(), background.z(), 1.f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -164,33 +139,53 @@ private:
             // transforms
             Mat4f view = camera.ViewMatrix();
             Mat4f projection = Matrix::Projection(70.f, (float)width / (float)height, 0.1f, 1000.f);
+            Mat4f model = Mat4f::Identity();
+            shaders["deferred_shading"]->Use().SetMVP(model, view, projection).SetMat4f("normalTransform", model)
+                .SetInt("diffuseMap", 0).SetInt("specularMap", 1);
+            textures["box"]->Use(0);
+            textures["box_specular"]->Use(1);
 
-            // draw light
-            Mat4f model = Matrix::Translation(light_pos) * Matrix::Scale(0.1f);
+            // draw boxes
+            for (int i = -2; i < 3; ++i) {
+                for (int j = -2; j < 3; ++j) {
+                    model = Matrix::Translation(2.f * i, 0.f, 2.f * j);
+                    shaders["deferred_shading"]->SetMat4f("model", model).SetMat4f("normalTransform", model);
+                    objects["box"]->Draw();
+                }
+            }
+
+
+            FrameBuffer::UseDefault();
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glDisable(GL_DEPTH_TEST);
+            //shaders["default"]->Use().SetInt("tex", 0);
+            //textures["gColorSpec"]->Use(0);
+            //objects["screen"]->Draw();
+
+            shaders["lighting"]->Use()
+                .SetInt("gPosition", 0).SetInt("gNormal", 1).SetInt("gColorSpec", 2)
+                .SetVec3f("viewPos", camera.pos)
+                .SetVec3f("lightPos", light_pos).SetVec3f("lightColor", light_color_base).SetFloat("lightIntensity", light_intensity)
+                .SetVec3f("ka", Vec3f(0.05f, 0.05f, 0.05f)).SetFloat("shininess", 128);
+            textures["gPosition"]->Use(0);
+            textures["gNormal"]->Use(1);
+            textures["gColorSpec"]->Use(2);
+            objects["screen"]->Draw();
+
+            glEnable(GL_DEPTH_TEST);
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer->fbo);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+            glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+            model = Matrix::Translation(light_pos) * Matrix::Scale(0.1f);
             shaders["light"]->Use().SetMVP(model, view, projection)
                 .SetVec3f("color", light_color_base);
             objects["light"]->Draw();
 
-            // draw floor
-            model = Matrix::Scale(16.f);
-            shaders["shadow"]->Use().SetMVP(model, view, projection).SetMat4f("normalTransform", model)
-                .SetVec3f("lightPos", light_pos).SetVec3f("lightColor", light_color_base * light_intensity)
-                .SetVec3f("viewPos", camera.pos)
-                .SetVec3f("Ka", Vec3f(0.03f, 0.03f, 0.03f)).SetVec3f("Ks", Vec3f(0.8f, 0.8f, 0.8f)).SetFloat("Ns", 32)
-                .SetInt("UseKdMap", true).SetInt("map_Kd", 0)
-                .SetInt("UseKsMap", false);
-            textures["floor"]->Use(0);
-            objects["floor"]->Draw();
-
-            // draw box
-            model = Matrix::Translation(0.f, 0.708f, 0.f) * Matrix::Rotation(Vec3f(0., 0., 1.), 45);
-            shaders["shadow"]->SetMat4f("model", model).SetMat4f("normalTransform", model)
-                .SetInt("UseKsMap", true).SetInt("map_Ks", 1);
-            textures["box"]->Use(0);
-            textures["box_specular"]->Use(1);
-            objects["box"]->Draw();
-
             // ====== End rendering code =======
+
+
 
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

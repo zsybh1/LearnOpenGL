@@ -147,7 +147,6 @@ private:
 
             glClearColor(background.x(), background.y(), background.z(), 1.f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             // rendering code
 
             Mat4f model = Matrix::Translation(Vec3f(0.f, 0.f, 0.f));
